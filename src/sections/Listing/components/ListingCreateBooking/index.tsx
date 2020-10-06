@@ -62,6 +62,7 @@ export const ListingCreateBooking = ({
               showToday={false}
               disabledDate={disabledData}
               onChange={(dateValue) => setCheckInDate(dateValue)}
+              onOpenChange={() => setCheckOutDate(null)}
             />
           </div>
           <div className="listing-booking__card-date-picker">
