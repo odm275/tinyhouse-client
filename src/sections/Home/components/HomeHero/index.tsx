@@ -26,6 +26,7 @@ export const HomeHero = ({ onSearch }: Props) => {
           size="large"
           enterButton
           className="home-hero__search-input"
+          onSearch={onSearch}
         />
       </div>
       <Row gutter={12} className="home-hero__cards">
