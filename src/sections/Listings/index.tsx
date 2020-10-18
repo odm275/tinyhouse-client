@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, RouteComponentProps } from "react-router-dom";
 import { useQuery } from "@apollo/react-hooks";
 import { Affix, Layout, List, Typography } from "antd";
@@ -25,7 +25,7 @@ interface MatchParams {
 const { Title, Paragraph, Text } = Typography;
 
 export const Listings = ({ match }: RouteComponentProps<MatchParams>) => {
-  // Get location param
+  const locationRef = useRef(match.params.location); // immutable memory that persits across re-renders
 
   const [filter, setFilter] = useState(ListingsFilter.PRICE_LOW_TO_HIGH);
   const [page, setPage] = useState(1);
@@ -33,6 +33,7 @@ export const Listings = ({ match }: RouteComponentProps<MatchParams>) => {
   const { loading, data, error } = useQuery<ListingsData, ListingsVariables>(
     LISTINGS,
     {
+      skip: locationRef.current !== match.params.location && page !== 1,
       variables: {
         location: match.params.location,
         filter,
@@ -41,6 +42,11 @@ export const Listings = ({ match }: RouteComponentProps<MatchParams>) => {
       },
     }
   );
+
+  useEffect(() => {
+    setPage(1);
+  }, [match.params.location]);
+
   if (loading) {
     return (
       <Content className="listings">
