@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 
 import {
+  Button,
   Form,
   Input,
   Layout,
@@ -45,6 +46,18 @@ export const Host = ({ viewer }: Props) => {
       });
     }
   };
+
+  const onFinish = (values: any) => {
+    console.log("Success:", values);
+  };
+
+  const onFinishFailed = (errorInfo: any) => {
+    console.log("Failed:", errorInfo);
+    if (errorInfo) {
+      displayErrorMessage("Please complete required form fields!");
+    }
+  };
+
   if (!viewer.id || !viewer.hasWallet) {
     return (
       <Content className="host-content">
@@ -66,7 +79,11 @@ export const Host = ({ viewer }: Props) => {
 
   return (
     <Content className="host-content">
-      <Form layout="vertical">
+      <Form
+        layout="vertical"
+        onFinish={onFinish}
+        onFinishFailed={onFinishFailed}
+      >
         <div className="host__form-header">
           <Title level={3} className="host__form-title">
             Hi! Let's get started listing your place.
@@ -77,7 +94,11 @@ export const Host = ({ viewer }: Props) => {
           </Text>
         </div>
 
-        <Item label="Home Type">
+        <Form.Item
+          label="Home Type"
+          name="type"
+          rules={[{ required: true, message: "Please select a home type!" }]}
+        >
           <Radio.Group>
             <Radio.Button value={ListingType.APARTMENT}>
               <BankOutlined style={{ color: iconColor }} />
@@ -88,16 +109,49 @@ export const Host = ({ viewer }: Props) => {
               <span>House</span>
             </Radio.Button>
           </Radio.Group>
-        </Item>
+        </Form.Item>
 
-        <Item label="Title" extra="Max character count of 45">
+        <Form.Item
+          label="Max # of Guests"
+          name="numOfGuests"
+          rules={[
+            {
+              required: true,
+              message: "Please enter the max number of guests",
+            },
+          ]}
+        >
+          <InputNumber min={1} placeholder="4" />
+        </Form.Item>
+
+        <Form.Item
+          label="Title"
+          extra="Max character count of 45"
+          name="title"
+          rules={[
+            {
+              required: true,
+              message: "Please enter a title for your listing!",
+            },
+          ]}
+        >
           <Input
             maxLength={45}
             placeholder="The iconic and luxurious Bel-Air mansion"
           />
-        </Item>
+        </Form.Item>
 
-        <Item label="Description of listing" extra="Max character count of 400">
+        <Form.Item
+          label="Description of listing"
+          extra="Max character count of 400"
+          name="description"
+          rules={[
+            {
+              required: true,
+              message: "Please enter a description for your listing!",
+            },
+          ]}
+        >
           <Input.TextArea
             rows={3}
             maxLength={400}
@@ -106,27 +160,71 @@ export const Host = ({ viewer }: Props) => {
               Situated in the heart of Bel-Air, Los Angeles.
             `}
           />
-        </Item>
+        </Form.Item>
 
-        <Item label="Address">
+        <Form.Item
+          label="Address"
+          name="address"
+          rules={[
+            {
+              required: true,
+              message: "Please enter a address for your listing!",
+            },
+          ]}
+        >
           <Input placeholder="251 North Bristol Avenue" />
-        </Item>
+        </Form.Item>
 
-        <Item label="City/Town">
+        <Form.Item
+          label="City/Town"
+          name="city"
+          rules={[
+            {
+              required: true,
+              message: "Please enter a city (or a region) for your listing!",
+            },
+          ]}
+        >
           <Input placeholder="Los Angeles" />
-        </Item>
+        </Form.Item>
 
-        <Item label="State/Province">
+        <Form.Item
+          label="State/Province"
+          name="state"
+          rules={[
+            {
+              required: true,
+              message:
+                "Please enter a state (or a providence) for your listing!",
+            },
+          ]}
+        >
           <Input placeholder="California" />
-        </Item>
+        </Form.Item>
 
-        <Item label="Zip/Postal Code">
-          <Input placeholder="Please enter a zip code for your listing!" />
-        </Item>
+        <Form.Item
+          label="Zip/Postal Code"
+          name="zip"
+          rules={[
+            {
+              required: true,
+              message: "Please enter a zip (or postal) code for your listing!",
+            },
+          ]}
+        >
+          <Input placeholder="Please enter a zip (or postal) code for your listing!" />
+        </Form.Item>
 
-        <Item
+        <Form.Item
           label="Image"
           extra="Images have to be under 1MB in size and of type JPG or PNG"
+          name="image"
+          rules={[
+            {
+              required: true,
+              message: "Please upload an image for your listing!",
+            },
+          ]}
         >
           <div className="host__form-image-upload">
             <Upload
@@ -147,11 +245,24 @@ export const Host = ({ viewer }: Props) => {
               )}
             </Upload>
           </div>
-        </Item>
+        </Form.Item>
 
-        <Item label="Price" extra="All prices in $USD/day">
+        <Form.Item
+          label="Price"
+          extra="All prices in $USD/day"
+          name="price"
+          rules={[
+            {
+              required: true,
+              message: "Please enter a price for your listing!",
+            },
+          ]}
+        >
           <InputNumber min={0} placeholder="120" />
-        </Item>
+        </Form.Item>
+        <Button type="primary" htmlType="submit">
+          Submit
+        </Button>
       </Form>
     </Content>
   );
