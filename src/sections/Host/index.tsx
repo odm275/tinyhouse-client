@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, Redirect } from "react-router-dom";
+import { useMutation } from "@apollo/react-hooks";
 import {
   BankOutlined,
   HomeOutlined,
@@ -18,7 +19,16 @@ import {
   Upload,
 } from "antd";
 import { UploadChangeParam } from "antd/lib/upload";
-import { iconColor, displayErrorMessage } from "../../lib/utils";
+import { HOST_LISTING } from "../../lib/graphql/mutations";
+import {
+  HostListing as HostListingData,
+  HostListingVariables,
+} from "../../lib/graphql/mutations/HostListing/__generated__/HostListing";
+import {
+  iconColor,
+  displayErrorMessage,
+  displaySuccessNotification,
+} from "../../lib/utils";
 import { Viewer } from "../../lib/types";
 import { ListingType } from "../../lib/graphql/globalTypes";
 
@@ -32,6 +42,20 @@ const { Item } = Form;
 export const Host = ({ viewer }: Props) => {
   const [imageLoading, setImageLoading] = useState(false);
   const [imageBase64Value, setImageBase64Value] = useState<string | null>(null);
+
+  const [hostListing, { loading, data }] = useMutation<
+    HostListingData,
+    HostListingVariables
+  >(HOST_LISTING, {
+    onCompleted: () => {
+      displaySuccessNotification("You've successfully create your listing!");
+    },
+    onError: () => {
+      displayErrorMessage(
+        "Sorry! We weren't able to create your listing. Please try again later."
+      );
+    },
+  });
   const handleImageUpload = (info: UploadChangeParam) => {
     const { file } = info;
     if (file.status === "uploading") {
@@ -48,7 +72,22 @@ export const Host = ({ viewer }: Props) => {
   };
 
   const onFinish = (values: any) => {
-    console.log("Success:", values);
+    const fullAddress = `${values.address}, ${values.city}, ${values.state}, ${values.postalCode}`;
+    const input = {
+      ...values,
+      address: fullAddress,
+      image: imageBase64Value,
+      price: values.price * 100,
+    };
+    delete input.city;
+    delete input.state;
+    delete input.postalCode;
+    console.log("input", input);
+    hostListing({
+      variables: {
+        input,
+      },
+    });
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -77,6 +116,23 @@ export const Host = ({ viewer }: Props) => {
     );
   }
 
+  if (loading) {
+    return (
+      <Content className="host-content">
+        <div className="host__form-header">
+          <Title level={3} className="host__form-title">
+            Please wait!
+          </Title>
+          <Text type="secondary">We're creating your listing now.</Text>
+        </div>
+      </Content>
+    );
+  }
+
+  if (data && data.hostListing) {
+    return <Redirect to={`/listing/${data.hostListing.id}`} />;
+  }
+
   return (
     <Content className="host-content">
       <Form
@@ -101,12 +157,11 @@ export const Host = ({ viewer }: Props) => {
         >
           <Radio.Group>
             <Radio.Button value={ListingType.APARTMENT}>
-              <BankOutlined style={{ color: iconColor }} />
+              <BankOutlined style={{ color: iconColor }} />{" "}
               <span>Apartment</span>
             </Radio.Button>
             <Radio.Button value={ListingType.HOUSE}>
-              <HomeOutlined style={{ color: iconColor }} />
-              <span>House</span>
+              <HomeOutlined style={{ color: iconColor }} /> <span>House</span>
             </Radio.Button>
           </Radio.Group>
         </Form.Item>
@@ -204,7 +259,7 @@ export const Host = ({ viewer }: Props) => {
 
         <Form.Item
           label="Zip/Postal Code"
-          name="zip"
+          name="postalCode"
           rules={[
             {
               required: true,
