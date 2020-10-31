@@ -71,6 +71,7 @@ export const User = ({
   }
 
   const user = data ? data.user : null;
+  console.log("user", user);
   const viewerIsUser = viewer.id === match.params.id;
   const userListings = user ? user.listings : null;
   const userBookings = user ? user.bookings : null;
