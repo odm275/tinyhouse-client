@@ -13,6 +13,7 @@ import { Viewer } from "../../lib/types";
 import {
   ListingBookings,
   ListingCreateBooking,
+  ListingCreateBookingModal,
   ListingDetails,
 } from "./components";
 
@@ -34,6 +35,7 @@ export const Listing = ({
   const [bookingsPage, setBookingsPage] = useState(1);
   const [checkInDate, setCheckInDate] = useState<Moment | null>(null);
   const [checkOutDate, setCheckOutDate] = useState<Moment | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const { loading, data, error } = useQuery<ListingData, ListingVariables>(
     LISTING,
@@ -75,16 +77,28 @@ export const Listing = ({
 
   const listingCreateBookingElement = listing ? (
     <ListingCreateBooking
+      viewer={viewer}
+      host={listing.host}
       price={listing.price}
       bookingsIndex={listing.bookingsIndex}
       checkInDate={checkInDate}
       checkOutDate={checkOutDate}
       setCheckInDate={setCheckInDate}
       setCheckOutDate={setCheckOutDate}
-      viewer={viewer}
-      host={listing.host}
+      setModalVisible={setModalVisible}
     />
   ) : null;
+
+  const listingCreateBookingModalElement =
+    listing && checkInDate && checkOutDate ? (
+      <ListingCreateBookingModal
+        price={listing.price}
+        modalVisible={modalVisible}
+        checkInDate={checkInDate}
+        checkOutDate={checkOutDate}
+        setModalVisible={setModalVisible}
+      />
+    ) : null;
 
   return (
     <Content className="listings">
@@ -97,6 +111,7 @@ export const Listing = ({
           {listingCreateBookingElement}
         </Col>
       </Row>
+      {listingCreateBookingModalElement}
     </Content>
   );
 };
