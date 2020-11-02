@@ -9,6 +9,7 @@ import {
 } from "../../lib/graphql/mutations/ConnectStripe/__generated__/ConnectStripe";
 import { displaySuccessNotification } from "../../lib/utils";
 import { Viewer } from "../../lib/types";
+import { useScrollToTop } from "../../lib/hooks";
 
 const { Content } = Layout;
 interface Props {
@@ -35,6 +36,8 @@ export const Stripe = ({
       }
     },
   });
+
+  useScrollToTop();
 
   const connectStripeRef = useRef(connectStripe);
 

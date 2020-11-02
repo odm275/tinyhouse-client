@@ -14,6 +14,7 @@ import {
   ListingsVariables,
 } from "../../lib/graphql/queries/Listings/__generated__/Listings";
 import { ListingsFilter } from "../../lib/graphql/globalTypes";
+import { useScrollToTop } from "../../lib/hooks";
 
 const { Content } = Layout;
 const PAGE_LIMIT = 8;
@@ -42,6 +43,8 @@ export const Listings = ({ match }: RouteComponentProps<MatchParams>) => {
       },
     }
   );
+
+  useScrollToTop();
 
   useEffect(() => {
     setPage(1);

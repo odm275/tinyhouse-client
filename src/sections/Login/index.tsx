@@ -18,6 +18,7 @@ import {
 import { Viewer } from "../../lib/types";
 // Image Assets
 import googleLogo from "./assets/google_logo.jpg";
+import { useScrollToTop } from "../../lib/hooks";
 
 const { Content } = Layout;
 const { Text, Title } = Typography;
@@ -40,6 +41,8 @@ export const Login = ({ setViewer }: Props) => {
       }
     },
   });
+
+  useScrollToTop();
 
   const logInRef = useRef(logIn);
 

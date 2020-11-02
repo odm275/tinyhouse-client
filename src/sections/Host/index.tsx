@@ -20,6 +20,8 @@ import {
 } from "antd";
 import { UploadChangeParam } from "antd/lib/upload";
 import { HOST_LISTING } from "../../lib/graphql/mutations";
+import { useScrollToTop } from "../../lib/hooks";
+
 import {
   HostListing as HostListingData,
   HostListingVariables,
@@ -40,6 +42,7 @@ const { Text, Title } = Typography;
 const { Item } = Form;
 
 export const Host = ({ viewer }: Props) => {
+  useScrollToTop();
   const [imageLoading, setImageLoading] = useState(false);
   const [imageBase64Value, setImageBase64Value] = useState<string | null>(null);
 
@@ -82,7 +85,6 @@ export const Host = ({ viewer }: Props) => {
     delete input.city;
     delete input.state;
     delete input.postalCode;
-    console.log("input", input);
     hostListing({
       variables: {
         input,

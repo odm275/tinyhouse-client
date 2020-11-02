@@ -16,6 +16,7 @@ import {
   WrappedListingCreateBookingModal as ListingCreateBookingModal,
   ListingDetails,
 } from "./components";
+import { useScrollToTop } from "../../lib/hooks";
 
 interface MatchParams {
   id: string;
@@ -43,6 +44,8 @@ export const Listing = ({
   >(LISTING, {
     variables: { id: match.params.id, bookingsPage, limit: PAGE_LIMIT },
   });
+
+  useScrollToTop();
 
   const clearBookingData = () => {
     setModalVisible(false);
