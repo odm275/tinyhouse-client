@@ -22,7 +22,6 @@ const PAGE_LIMIT = 4;
 const PAGE_NUMBER = 1;
 
 export const Home = ({ history }: RouteComponentProps) => {
-  console.log(ListingsFilter.PRICE_HIGH_TO_LOW);
   const { loading, data } = useQuery<ListingsData, ListingsVariables>(
     LISTINGS,
     {
@@ -31,6 +30,7 @@ export const Home = ({ history }: RouteComponentProps) => {
         limit: PAGE_LIMIT,
         page: PAGE_NUMBER,
       },
+      fetchPolicy: "cache-and-network",
     }
   );
   const onSearch = (value: string) => {
