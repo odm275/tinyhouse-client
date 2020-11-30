@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { Link, withRouter, RouteComponentProps } from "react-router-dom";
+import { useApolloClient, useQuery } from "@apollo/react-hooks";
 import { Input, AutoComplete, Layout } from "antd";
 import { MenuItems } from "./components";
 import logo from "./assets/tinyhouse-logo.png";
 import { Viewer } from "../../lib/types";
 import { displayErrorMessage } from "../../lib/utils";
-
+import { AUTO_COMPLETE_OPTIONS } from "../../lib/graphql/queries";
+import {
+  AutoCompleteOptions as AutoCompleteOptionsData,
+  AutoCompleteOptionsVariables,
+} from "../../lib/graphql/queries/AutoCompleteOptions/__generated__/AutoCompleteOptions";
 const { Header } = Layout;
 const { Search } = Input;
 
@@ -17,6 +22,18 @@ interface Props {
 export const AppHeader = withRouter(
   ({ viewer, setViewer, location, history }: Props & RouteComponentProps) => {
     const [search, setSearch] = useState("");
+    const [options, setOptions] = useState([]);
+    const { loading, data, error } = useQuery<AutoCompleteOptionsData>(
+      AUTO_COMPLETE_OPTIONS,
+      {
+        variables: {
+          text: "Canada",
+        },
+      }
+    );
+
+    console.log("autoCompletedata", data);
+
     useEffect(() => {
       const { pathname } = location;
       const pathnameSubStrings = pathname.split("/");
@@ -40,6 +57,10 @@ export const AppHeader = withRouter(
         displayErrorMessage("Please enter a valid search");
       }
     };
+    const onChange = (data: string) => {
+      // GO to server
+      setSearch(data);
+    };
     return (
       <Header className="app-header">
         <div className="app-header__logo-search-section">
@@ -49,13 +70,21 @@ export const AppHeader = withRouter(
             </Link>
           </div>
           <div className="app-header__search-input">
-            <Search
+            <AutoComplete value={search} onChange={onChange}>
+              <Input.Search
+                placeholder="Search 'San Francisco'"
+                enterButton
+                onSearch={onSearch}
+              />
+            </AutoComplete>
+            {/* <Search
               placeholder="Search 'San Francisco'"
               enterButton
               value={search}
               onChange={(evt) => setSearch(evt.target.value)}
               onSearch={onSearch}
             />
+             */}
           </div>
         </div>
         <div className="app-header__menu-section">
