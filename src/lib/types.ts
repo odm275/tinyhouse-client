@@ -4,5 +4,4 @@ export interface Viewer {
   avatar: string | null;
   hasWallet: boolean | null;
   didRequest: boolean;
-  
 }

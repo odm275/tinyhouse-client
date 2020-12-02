@@ -9,16 +9,19 @@
 
 export interface AutoCompleteOptions_autoCompleteOptions_result {
   __typename: "Listing";
-  title: string;
+  id: string;
+  city: string;
+  address: string;
 }
 
 export interface AutoCompleteOptions_autoCompleteOptions {
   __typename: "Listings";
   result: AutoCompleteOptions_autoCompleteOptions_result[];
+  total: number;
 }
 
 export interface AutoCompleteOptions {
-  autoCompleteOptions: AutoCompleteOptions_autoCompleteOptions | null;
+  autoCompleteOptions: AutoCompleteOptions_autoCompleteOptions;
 }
 
 export interface AutoCompleteOptionsVariables {

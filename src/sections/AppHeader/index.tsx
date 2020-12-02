@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, withRouter, RouteComponentProps } from "react-router-dom";
 import { useApolloClient, useQuery } from "@apollo/react-hooks";
 import { Input, AutoComplete, Layout } from "antd";
@@ -19,20 +19,32 @@ interface Props {
   setViewer: (viewer: Viewer) => void;
 }
 
+function suggestCityOrAddress(text: string, result: any) {
+  const sanitizedCity = result.city.toLowerCase();
+  const sanitizedText = text.toLowerCase();
+
+  // text is in city
+  if (sanitizedCity.includes(sanitizedText)) {
+    // we want the city as the suggestion
+
+    return result.city;
+  }
+
+  return result.address;
+}
+
+function uniq(a: string[]) {
+  return Array.from(new Set(a));
+}
+
 export const AppHeader = withRouter(
   ({ viewer, setViewer, location, history }: Props & RouteComponentProps) => {
-    const [search, setSearch] = useState("");
-    const [options, setOptions] = useState([]);
-    const { loading, data, error } = useQuery<AutoCompleteOptionsData>(
-      AUTO_COMPLETE_OPTIONS,
-      {
-        variables: {
-          text: "Canada",
-        },
-      }
-    );
+    const client = useApolloClient();
+    const [search, setSearch] = useState<string>("");
 
-    console.log("autoCompletedata", data);
+    const [options, setOptions] = useState<{ value: string }[]>([]);
+
+    console.log("options", options);
 
     useEffect(() => {
       const { pathname } = location;
@@ -48,6 +60,19 @@ export const AppHeader = withRouter(
       }
     }, [location]);
 
+    const handleAutoCompleteResults = (
+      results: AutoCompleteOptionsData["autoCompleteOptions"]["result"]
+    ) => {
+      const options = results.map((result) =>
+        suggestCityOrAddress(search, result)
+      );
+      const uniqueOptions = uniq(options);
+      const antdOptions = uniqueOptions.map((option) => {
+        return { value: option };
+      });
+      return antdOptions;
+    };
+
     const onSearch = (value: string) => {
       const trimmedValue = value.trim();
 
@@ -57,10 +82,29 @@ export const AppHeader = withRouter(
         displayErrorMessage("Please enter a valid search");
       }
     };
-    const onChange = (data: string) => {
+
+    const onChange = async (data: string) => {
       // GO to server
       setSearch(data);
+      const searchInputIsLongEnough = search.length > 3;
+      if (searchInputIsLongEnough) {
+        // try to get some options
+        try {
+          const { data } = await client.query<
+            AutoCompleteOptionsData,
+            AutoCompleteOptionsVariables
+          >({ query: AUTO_COMPLETE_OPTIONS, variables: { text: search } });
+          const autoCompleteResults = data.autoCompleteOptions.result;
+          const options = handleAutoCompleteResults(autoCompleteResults);
+          setOptions(options);
+        } catch {
+          throw Error("Couldn't get options");
+        }
+      }
     };
+
+    // Now we need to render the options
+
     return (
       <Header className="app-header">
         <div className="app-header__logo-search-section">
@@ -70,7 +114,7 @@ export const AppHeader = withRouter(
             </Link>
           </div>
           <div className="app-header__search-input">
-            <AutoComplete value={search} onChange={onChange}>
+            <AutoComplete value={search} onChange={onChange} options={options}>
               <Input.Search
                 placeholder="Search 'San Francisco'"
                 enterButton
