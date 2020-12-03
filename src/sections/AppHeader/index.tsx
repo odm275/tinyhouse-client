@@ -13,7 +13,6 @@ import {
   AutoCompleteOptionsVariables,
 } from "../../lib/graphql/queries/AutoCompleteOptions/__generated__/AutoCompleteOptions";
 const { Header } = Layout;
-const { Search } = Input;
 
 interface Props {
   viewer: Viewer;
@@ -23,14 +22,12 @@ interface Props {
 function suggestCityOrAddress(text: string, result: any) {
   const sanitizedCity = result.city.toLowerCase();
   const sanitizedText = text.toLowerCase();
-
   // text is in city
   if (sanitizedCity.includes(sanitizedText)) {
     // we want the city as the suggestion
-
-    return result.city;
+    const cityWState = `${result.city}, ${result.admin}`;
+    return cityWState;
   }
-
   return result.address;
 }
 
@@ -45,8 +42,6 @@ export const AppHeader = withRouter(
 
     const [options, setOptions] = useState<{ value: string }[]>([]);
 
-    console.log("options", options);
-
     useEffect(() => {
       const { pathname } = location;
       const pathnameSubStrings = pathname.split("/");
@@ -55,7 +50,6 @@ export const AppHeader = withRouter(
         return;
       }
       if (pathname.includes("/listings") && pathnameSubStrings.length === 3) {
-        // localhost:3000/listings/toronto
         setSearch(pathnameSubStrings[2]);
         return;
       }
@@ -131,14 +125,6 @@ export const AppHeader = withRouter(
                 onSearch={onSearch}
               />
             </AutoComplete>
-            {/* <Search
-              placeholder="Search 'San Francisco'"
-              enterButton
-              value={search}
-              onChange={(evt) => setSearch(evt.target.value)}
-              onSearch={onSearch}
-            />
-             */}
           </div>
         </div>
         <div className="app-header__menu-section">
