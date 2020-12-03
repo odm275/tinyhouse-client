@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, withRouter, RouteComponentProps } from "react-router-dom";
-import { useApolloClient, useQuery } from "@apollo/react-hooks";
+import { useApolloClient } from "@apollo/react-hooks";
 import { Input, AutoComplete, Layout } from "antd";
+import debounce from "lodash.debounce";
 import { MenuItems } from "./components";
 import logo from "./assets/tinyhouse-logo.png";
 import { Viewer } from "../../lib/types";
@@ -83,6 +84,21 @@ export const AppHeader = withRouter(
       }
     };
 
+    const debouncedQuery = useRef(
+      debounce(async (text) => {
+        const { data } = await client.query<
+          AutoCompleteOptionsData,
+          AutoCompleteOptionsVariables
+        >({ query: AUTO_COMPLETE_OPTIONS, variables: { text } });
+        if (data && data.autoCompleteOptions) {
+          const autoCompleteResults = data.autoCompleteOptions.result;
+          const options = handleAutoCompleteResults(autoCompleteResults);
+
+          setOptions(options);
+        }
+      }, 1000)
+    ).current;
+
     const onChange = async (data: string) => {
       // GO to server
       setSearch(data);
@@ -90,13 +106,7 @@ export const AppHeader = withRouter(
       if (searchInputIsLongEnough) {
         // try to get some options
         try {
-          const { data } = await client.query<
-            AutoCompleteOptionsData,
-            AutoCompleteOptionsVariables
-          >({ query: AUTO_COMPLETE_OPTIONS, variables: { text: search } });
-          const autoCompleteResults = data.autoCompleteOptions.result;
-          const options = handleAutoCompleteResults(autoCompleteResults);
-          setOptions(options);
+          await debouncedQuery(search);
         } catch {
           throw Error("Couldn't get options");
         }
