@@ -56,7 +56,8 @@ export const AppHeader = withRouter(
     }, [location]);
 
     const handleAutoCompleteResults = (
-      results: AutoCompleteOptionsData["autoCompleteOptions"]["result"]
+      results: AutoCompleteOptionsData["autoCompleteOptions"]["result"],
+      search: string
     ) => {
       const options = results.map((result) =>
         suggestCityOrAddress(search, result)
@@ -79,33 +80,38 @@ export const AppHeader = withRouter(
     };
 
     const debouncedQuery = useRef(
-      debounce(async (text) => {
+      debounce(async (search) => {
         const { data } = await client.query<
           AutoCompleteOptionsData,
           AutoCompleteOptionsVariables
-        >({ query: AUTO_COMPLETE_OPTIONS, variables: { text } });
+        >({ query: AUTO_COMPLETE_OPTIONS, variables: { text: search } });
         if (data && data.autoCompleteOptions) {
           const autoCompleteResults = data.autoCompleteOptions.result;
-          const options = handleAutoCompleteResults(autoCompleteResults);
-
+          const options = handleAutoCompleteResults(
+            autoCompleteResults,
+            search
+          );
           setOptions(options);
         }
       }, 1000)
     ).current;
 
-    const onChange = async (data: string) => {
-      // GO to server
-      setSearch(data);
-      const searchInputIsLongEnough = search.length > 3;
-      if (searchInputIsLongEnough) {
-        // try to get some options
-        try {
-          await debouncedQuery(search);
-        } catch {
-          throw Error("Couldn't get options");
+    useEffect(() => {
+      const searchInputIsLongEnough = search.length > 2;
+      const fetchAsyncDebouncedQuery = async () => {
+        if (searchInputIsLongEnough) {
+          // try to get some options
+          try {
+            await debouncedQuery(search);
+          } catch {
+            throw Error("Couldn't get options");
+          }
+        } else {
+          setOptions([]);
         }
-      }
-    };
+      };
+      fetchAsyncDebouncedQuery();
+    }, [search]);
 
     // Now we need to render the options
 
@@ -118,7 +124,11 @@ export const AppHeader = withRouter(
             </Link>
           </div>
           <div className="app-header__search-input">
-            <AutoComplete value={search} onChange={onChange} options={options}>
+            <AutoComplete
+              value={search}
+              onChange={(data: string) => setSearch(data)}
+              options={options}
+            >
               <Input.Search
                 placeholder="Search 'San Francisco'"
                 enterButton
