@@ -3,13 +3,19 @@ import { gql } from "apollo-boost";
 export const AUTO_COMPLETE_OPTIONS = gql`
   query AutoCompleteOptions($text: String!) {
     autoCompleteOptions(text: $text) {
-      result {
-        id
-        city
-        address
-        admin
+      ... on Listings {
+        total
+        result {
+          address
+        }
       }
-      total
+      ... on CityAndAdminResults {
+        total
+        result {
+          admin
+          city
+        }
+      }
     }
   }
 `;

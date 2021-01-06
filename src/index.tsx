@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import "./styles/index.css";
-import ApolloClient from "apollo-boost";
+import ApolloClient, {
+  InMemoryCache,
+  IntrospectionFragmentMatcher,
+} from "apollo-boost";
 import { ApolloProvider, useMutation } from "react-apollo";
 import { StripeProvider, Elements } from "react-stripe-elements";
 import { Affix, Layout, Spin } from "antd";
@@ -24,9 +27,17 @@ import {
   Stripe,
   User,
 } from "./sections";
+import introspectionQueryResultData from "./fragmentTypes.json";
+
+const fragmentMatcher = new IntrospectionFragmentMatcher({
+  introspectionQueryResultData,
+});
+
+const cache = new InMemoryCache({ fragmentMatcher });
 
 const client = new ApolloClient({
   uri: "/api",
+  cache,
   request: async (operation) => {
     const token = sessionStorage.getItem("token");
     operation.setContext({

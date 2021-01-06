@@ -10,6 +10,7 @@ import { displayErrorMessage } from "../../lib/utils";
 import { AUTO_COMPLETE_OPTIONS } from "../../lib/graphql/queries";
 import {
   AutoCompleteOptions as AutoCompleteOptionsData,
+  AutoCompleteOptions_autoCompleteOptions_CityAndAdminResults_result as CityAndAdminResult,
   AutoCompleteOptionsVariables,
 } from "../../lib/graphql/queries/AutoCompleteOptions/__generated__/AutoCompleteOptions";
 const { Header } = Layout;
@@ -26,13 +27,10 @@ function suggestCityOrAddress(text: string, result: any) {
   if (sanitizedCity.includes(sanitizedText)) {
     // we want the city as the suggestion
     const cityWState = `${result.city}, ${result.admin}`;
-    return cityWState;
+    return { title: cityWState, path: result.city };
+  } else {
+    return { title: result.address, path: result.id };
   }
-  return result.address;
-}
-
-function uniq(a: string[]) {
-  return Array.from(new Set(a));
 }
 
 export const AppHeader = withRouter(
@@ -40,7 +38,7 @@ export const AppHeader = withRouter(
     const client = useApolloClient();
     const [search, setSearch] = useState<string>("");
 
-    const [options, setOptions] = useState<{ value: string }[]>([]);
+    const [options, setOptions] = useState<any>([]);
 
     useEffect(() => {
       const { pathname } = location;
@@ -55,18 +53,64 @@ export const AppHeader = withRouter(
       }
     }, [location]);
 
+    const renderOption = (result: any, search: string) => {
+      const { title, path } = suggestCityOrAddress(search, result);
+      console.log("title", title);
+      console.log("path", path);
+
+      return {
+        value: title,
+        label: (
+          <a
+            href={`${window.location.hostname}/listings/${path.toLowerCase()}`}
+          >
+            {title}
+          </a>
+        ),
+      };
+    };
+
+    const formatCityAndAdminResult = (result: any) => {
+      const cityWState = `${result.city}, ${result.admin}`;
+
+      return cityWState;
+    };
+
+
+
     const handleAutoCompleteResults = (
-      results: AutoCompleteOptionsData["autoCompleteOptions"]["result"],
+      data: AutoCompleteOptionsData,
       search: string
     ) => {
-      const options = results.map((result) =>
-        suggestCityOrAddress(search, result)
-      );
-      const uniqueOptions = uniq(options);
-      const antdOptions = uniqueOptions.map((option) => {
-        return { value: option };
-      });
-      return antdOptions;
+      // Depending on the type of data, we will handle each case differently.
+      const searchIncludesCity = (result:any) => {
+        const { city } = result;
+        if (city) {
+          const sanitizedCity = city.toLowerCase();
+          const sanitizedText = search.toLowerCase();
+
+          return sanitizedCity.includes(sanitizedText)
+      }
+      if (data.autoCompleteOptions) {
+        console.log("come on", data.autoCompleteOptions);
+        if (data.autoCompleteOptions?.__typename === "Listings") {
+          // const renderOptions = data.autoCompleteOptions.result.map((result) =>
+          //   renderOption(result, search)
+          // );
+        } else if (
+          data.autoCompleteOptions?.__typename === "CityAndAdminResults"
+        ) {
+          const renderOptions = data.autoCompleteOptions.result
+            .filter((result) => searchIncludesCity(result))
+            .map((result) => renderOption(result, search));
+
+          return renderOptions;
+        }
+
+        //MAP results -> renderOptions
+        // return renderOptions;
+      }
+      return [];
     };
 
     const onSearch = (value: string) => {
@@ -85,12 +129,10 @@ export const AppHeader = withRouter(
           AutoCompleteOptionsData,
           AutoCompleteOptionsVariables
         >({ query: AUTO_COMPLETE_OPTIONS, variables: { text: search } });
-        if (data && data.autoCompleteOptions) {
-          const autoCompleteResults = data.autoCompleteOptions.result;
-          const options = handleAutoCompleteResults(
-            autoCompleteResults,
-            search
-          );
+
+        if (data) {
+          const options = handleAutoCompleteResults(data, search);
+          console.log("options", options);
           setOptions(options);
         }
       }, 1000)
@@ -128,6 +170,7 @@ export const AppHeader = withRouter(
               value={search}
               onChange={(data: string) => setSearch(data)}
               options={options}
+              style={{ width: "100%" }}
             >
               <Input.Search
                 placeholder="Search 'San Francisco'"
