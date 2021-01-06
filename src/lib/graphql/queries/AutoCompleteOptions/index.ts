@@ -7,6 +7,7 @@ export const AUTO_COMPLETE_OPTIONS = gql`
         total
         result {
           address
+          id
         }
       }
       ... on CityAndAdminResults {

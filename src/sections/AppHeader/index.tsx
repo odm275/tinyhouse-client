@@ -53,56 +53,57 @@ export const AppHeader = withRouter(
       }
     }, [location]);
 
-    const renderOption = (result: any, search: string) => {
+    const renderCityAndAdminResult = (result: any, search: string) => {
       const { title, path } = suggestCityOrAddress(search, result);
-      console.log("title", title);
-      console.log("path", path);
-
       return {
         value: title,
         label: (
-          <a
-            href={`${window.location.hostname}/listings/${path.toLowerCase()}`}
-          >
+          <a href={`${window.location.origin}/listings/${path.toLowerCase()}`}>
             {title}
           </a>
         ),
       };
     };
 
-    const formatCityAndAdminResult = (result: any) => {
-      const cityWState = `${result.city}, ${result.admin}`;
+    const renderAddressResult = (result: any, search: string) => {
+      const { id, address } = result;
 
-      return cityWState;
+      return {
+        value: address,
+        label: (
+          <a href={`${window.location.origin}/listing/${id}`}>{address}</a>
+        ),
+      };
     };
-
-
 
     const handleAutoCompleteResults = (
       data: AutoCompleteOptionsData,
       search: string
     ) => {
-      // Depending on the type of data, we will handle each case differently.
-      const searchIncludesCity = (result:any) => {
+      // Filter results that don't match every character in search input.
+      // server may return partial matches we don't want(Fuzzy gets us half way, we clean it up here)
+      const searchIncludesCity = (result: any, search: any) => {
         const { city } = result;
         if (city) {
           const sanitizedCity = city.toLowerCase();
           const sanitizedText = search.toLowerCase();
 
-          return sanitizedCity.includes(sanitizedText)
-      }
+          return sanitizedCity.includes(sanitizedText);
+        }
+      };
       if (data.autoCompleteOptions) {
-        console.log("come on", data.autoCompleteOptions);
+        console.log("results", data.autoCompleteOptions);
         if (data.autoCompleteOptions?.__typename === "Listings") {
-          // const renderOptions = data.autoCompleteOptions.result.map((result) =>
-          //   renderOption(result, search)
-          // );
+          const renderOptions = data.autoCompleteOptions.result.map((result) =>
+            renderAddressResult(result, search)
+          );
+          return renderOptions;
         } else if (
           data.autoCompleteOptions?.__typename === "CityAndAdminResults"
         ) {
           const renderOptions = data.autoCompleteOptions.result
-            .filter((result) => searchIncludesCity(result))
-            .map((result) => renderOption(result, search));
+            .filter((result) => searchIncludesCity(result, search))
+            .map((result) => renderCityAndAdminResult(result, search));
 
           return renderOptions;
         }
