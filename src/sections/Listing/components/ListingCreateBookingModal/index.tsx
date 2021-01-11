@@ -90,7 +90,6 @@ export const ListingCreateBookingModal = ({
           : "Sorry! We weren't able to book the listing. Please try again later."
       );
     }
-    console.log(stripeToken);
   };
 
   return (

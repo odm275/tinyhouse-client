@@ -62,7 +62,6 @@ const App = () => {
     onCompleted: (data) => {
       if (data && data.logIn) {
         setViewer(data.logIn);
-        console.log("data", data);
         if (data.logIn.token) {
           sessionStorage.setItem("token", data.logIn.token);
         } else {

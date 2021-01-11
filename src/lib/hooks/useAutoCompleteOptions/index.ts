@@ -20,7 +20,7 @@ export const useAutoCompleteOptions = (search: string) => {
       >({ query: AUTO_COMPLETE_OPTIONS, variables: { text: search } });
 
       if (data) {
-        // const options = handleAutoCompleteResults(data, search);
+        console.log("data", data);
         setOptions(data.autoCompleteOptions);
       }
     }, 1000)
