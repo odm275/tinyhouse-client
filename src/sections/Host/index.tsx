@@ -135,6 +135,12 @@ export const Host = ({ viewer }: Props) => {
     return <Redirect to={`/listing/${data.hostListing.id}`} />;
   }
 
+  const dummyRequest = (option: any) => {
+    setTimeout(() => {
+      option.onSuccess("ok");
+    }, 0);
+  };
+
   return (
     <Content className="host-content">
       <Form
@@ -288,7 +294,7 @@ export const Host = ({ viewer }: Props) => {
               name="image"
               listType="picture-card"
               showUploadList={false}
-              action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+              customRequest={dummyRequest}
               beforeUpload={beforeImageUpload}
               onChange={handleImageUpload}
             >
